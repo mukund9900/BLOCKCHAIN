@@ -60,7 +60,7 @@ class Block {
     }
 
     static blockHash(block) {
-        return this.hash(block.lastHash, block.timestamp, block.data, block.nonce, block.difficulty);
+        return Block.hash(block.lastHash, block.timestamp, block.data, block.nonce, block.difficulty);
     }
 }
 

@@ -8,6 +8,22 @@ class Transaction {
         this.output = [];
     }
 
+    update(senderWallet, recipient, amount) {
+        const senderOutput = this.output.find(out => out.address === senderWallet.publicKey);
+        if (amount > senderOutput.amount) {
+            console.log(`Insufficient fund`);
+            return;
+        }
+        senderOutput.amount = senderOutput.amount - amount;
+        this.output.push({amount, address: recipient});
+        senderWallet.balance = senderOutput.amount;
+        Transaction.signTransaction(this, senderWallet);
+
+        if(Transaction.verifyTransaction(this)){
+            return this;
+        }
+    }
+
     static newTransaction(senderWallet, recipient, amount) {
         const transaction = new this();
         if (amount > senderWallet.balance) {
@@ -24,6 +40,7 @@ class Transaction {
                 address: recipient
             }
         ])
+        senderWallet.balance = senderWallet.balance - amount;
         return transaction;
     }
 
@@ -36,7 +53,7 @@ class Transaction {
         }
     }
 
-    static verifyTransaction(transaction){
+    static verifyTransaction(transaction) {
         return chainUtil.verifySignature(
             transaction.input.address,
             transaction.input.signature,
