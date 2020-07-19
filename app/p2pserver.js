@@ -1,14 +1,25 @@
+/**
+ *
+ * 16/july/2020
+ * Mukund raj S T
+ * */
+
 const Websocket = require('ws');
 
 const P2P_PORT = process.env.P2P_PORT || 5001;
 
 const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : [];
-
+const MESSAGE_TYPE = {
+    chain: 'CHAIN',
+    transaction: 'TRANSACTION',
+    clear_transactions: 'CLEAR_TRANSACTIONS'
+}
 
 class P2PSERVER {
 
-    constructor(blockchain) {
+    constructor(blockchain, transactions) {
         this.blockchain = blockchain;
+        this.transactions = transactions;
         this.socket = [];
     }
 
@@ -31,13 +42,36 @@ class P2PSERVER {
     }
 
     sendChain(socket) {
-        socket.send(JSON.stringify(this.blockchain.chain))
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPE.chain,
+            chain: this.blockchain.chain
+        }))
+    }
+
+    sendTransaction(socket, transaction) {
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPE.transaction,
+            transaction
+        }))
     }
 
     messageHandler(socket) {
         socket.on('message', message => {
             const data = JSON.parse(message);
-            this.blockchain.replaceChain(data);
+            switch (data.type) {
+                case MESSAGE_TYPE.chain:
+                    this.blockchain.replaceChain(data.chain);
+                    break;
+                case MESSAGE_TYPE.transaction:
+                    this.transactions.upsertTransactionPool(data.transaction);
+                    break;
+                case MESSAGE_TYPE.clear_transactions:
+                    this.transactions.clearPool();
+                    break;
+
+                default:
+                    return;
+            }
         });
     }
 
@@ -45,6 +79,18 @@ class P2PSERVER {
         this.socket.forEach(socket => {
             this.sendChain(socket);
         })
+    }
+
+    _broadCastTransaction (transaction){
+        this.socket.forEach(socket => {
+            this.sendTransaction(socket, transaction);
+        })
+    }
+
+    _broadCastClearTransactions() {
+        this.socket.forEach(socket => socket.send(JSON.stringify({
+            type: MESSAGE_TYPE.clear_transactions
+        })));
     }
 
     listen() {

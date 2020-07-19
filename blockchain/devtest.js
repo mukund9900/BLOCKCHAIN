@@ -21,26 +21,6 @@ const Transaction = require('../wallet/transaction');
 // console.log('================= my blockchain =====', blockchain1);
 
 
-/**
- * test  wallet class and transactions
- * */
-const _myWallet = new Wallet();
-console.log(_myWallet);
-const recipient = 'R3C1P13N7';
-const amount = 100;
-
-const transaction = Transaction.newTransaction(_myWallet, recipient, amount)
-
-const transaction_sig = Transaction.signTransaction(transaction, _myWallet);
-
-// const verifyTransaction = Transaction.verifyTransaction(transaction);
-console.log('===========my first transaction and sig and very ======',transaction);
-
-
-transaction.update(_myWallet, 'NewR3C1P13N7', 200);
-const verifyTransaction = Transaction.verifyTransaction(transaction);
-
-console.log('================ >> after updating transaction ====>>', transaction, verifyTransaction);
 
 
 

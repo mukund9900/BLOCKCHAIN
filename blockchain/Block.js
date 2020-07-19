@@ -32,7 +32,7 @@ class Block {
     }
 
     static genesis() {
-        return new this('first>hash001', '-----', 'timestamp', 'Consciousness', 0, DIFFICULTY);
+        return new this('first>hash001', '-----', 'timestamp', [], 0, DIFFICULTY);
     }
 
     static mineBlock(lastBlock, data) {
@@ -45,7 +45,8 @@ class Block {
             timestamp = Date.now();
             difficulty = this._adjustDifficulty(lastBlock, timestamp);
             hash = this.hash(lastHash, timestamp, data, nonce, difficulty);
-        } while (hash.substring(0, difficulty) !== '0'.repeat(difficulty))
+        } while (hash.substring(0, difficulty) !== '0'.repeat(difficulty));
+
         return new this(hash, lastHash, timestamp, data, nonce, difficulty);
     }
 
